@@ -30,8 +30,7 @@ def days(str1,str2):
     num=(date2-date1).days
     return num
 
-# def crawler_twdomain_expiry(domain):
-#
+
 for tw in twdomain:
     try:
         twdoamin_dict = {}
@@ -67,7 +66,6 @@ for tw in twdomain:
 
         list_domain.append(twdoamin_dict)
 
-
         delay = random.randint(1, 7)
     except:
         logging.error("tw doamin crawler failure.")
@@ -76,7 +74,6 @@ for tw in twdomain:
 #
 #
 # #菲律賓取得到期日
-# # def crawler_phdomain_expiry(domain):
 for phd in phdomain:
     try:
 
@@ -108,10 +105,7 @@ for phd in phdomain:
     except:
         logging.error("phd doamin crawler failure.")
 
-
 #越南 取得到期日
-# def crawler_vndomain_expiry(domain):
-
 for vn in vndomain:
     try:
         vndomain_dict = {}
@@ -139,22 +133,17 @@ for vn in vndomain:
 
         vndomain_dict['Expiry_day'] = Expiry_time
 
-
-
         vndomain_dict["離到期還有(天)"] = days(day1,Expiry_time)
         #陣列相加
         list_domain.append(vndomain_dict)
-
-        # df = pd.DataFrame(list_vnddomain)
 
         delay = random.randint(1, 7)
 
     except:
         logging.error("vn doamin crawler failure.")
 
-        # print(dfvn)
 #印度爬取
-# def crawler_indomain_expiry(domain):
+
 for ind in inddomain:
     try:
         inddomain_dict = {}
