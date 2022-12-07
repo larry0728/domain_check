@@ -4,10 +4,11 @@ import random
 import pygsheets
 import datetime
 from datetime import date
+import json
 from bs4 import BeautifulSoup
 from config import twdomain,vndomain,phdomain,inddomain
 import logging
-
+from time import sleep
 #台灣取得到期日
 mydomain = []
 list_domain = []
@@ -36,25 +37,89 @@ for tw in twdomain:
         twdoamin_dict = {}
 
         headers = {
-            "Cookie": "w365_lang=tw; _ga=GA1.2.686058391.1660805877; __gads=ID=1b9119966c6cd591-2206a4daaad50084:T=1660805877:RT=1660805877:S=ALNI_MbbZ6_aWuQYE6uCc8VUyDSS14PmfQ; _gid=GA1.2.1867532187.1661163990; __gpi=UID=000008b8513cf644:T=1660805877:RT=1661241732:S=ALNI_MY43Xe3Ym_pTo7Vevh9_aKFOGy3rg; _gali=searchform; w365id=qposlbkjmthupk31tsl6nhk4i5",
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36",
+            #
+            'referer': 'http://www.asqql.com/',
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
             # 使用者代理
             #
         }
 
-        myrequests = "https://www.whois365.com/tw/domain/" + tw
+        myrequests = "https://rdap.godaddy.com/v1/domain/" + tw
 
         myget = requests.get(myrequests,headers=headers)
 
+        if myget.status_code == 404 :
+            headers = {
+                'referer': 'https://lookup.icann.org/',
+                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
+            }
+
+            myrequests2 = "https://rdap.verisign.com/net/v1/domain/" + tw
+
+            myget2 = requests.get(myrequests2, headers=headers)
+
+            if myget2.status_code == 404:
+                headers = {
+                    'referer': 'https://lookup.icann.org/',
+                    "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
+                }
+                myrequests3 = "https://rdap.verisign.com/com/v1/domain/" + tw
+
+                myget3 = requests.get(myrequests3, headers=headers)
+
+                soup3 = BeautifulSoup(myget3.text, "html.parser")
+
+                data = json.loads(str(soup3))
+
+                needspilt = data['events'][1]['eventDate']
+
+                needreplace = needspilt.split("T")[0]
+
+                Expiry_time = needreplace.replace("-", ",").strip()
+
+                twdoamin_dict['domain_name'] = tw
+
+                twdoamin_dict['Expiry_day'] = Expiry_time
+
+                twdoamin_dict["離到期還有(天)"] = days(day1, Expiry_time)
+
+                list_domain.append(twdoamin_dict)
+
+                delay = random.randint(20, 40)
+
+                sleep(delay)
+                continue
+
+            soup2 = BeautifulSoup(myget2.text, "html.parser")
+
+            data = json.loads(str(soup2))
+
+            needspilt = data['events'][1]['eventDate']
+
+            needreplace = needspilt.split("T")[0]
+
+            Expiry_time = needreplace.replace("-", ",").strip()
+
+            twdoamin_dict['domain_name'] = tw
+
+            twdoamin_dict['Expiry_day'] = Expiry_time
+
+            twdoamin_dict["離到期還有(天)"] = days(day1, Expiry_time)
+
+            list_domain.append(twdoamin_dict)
+
+            delay = random.randint(20,40)
+
+            sleep(delay)
+            continue
+
         soup = BeautifulSoup(myget.text,"html.parser")
 
-        needspilt_domain=soup.find("div",id="whois-result").find("p",class_="raw_data1").text
+        data = json.loads(str(soup))
 
-        needstrip=needspilt_domain.split("Registry Expiry Date:")[1].split("Registrar:")[0]
+        needspilt = data['events'][1]['eventDate']
 
-        needsplit2=needstrip.replace('T',',').replace('Z','')
-
-        needreplace=needsplit2.split(',')[0]
+        needreplace = needspilt.split("T")[0]
 
         Expiry_time=needreplace.replace("-",",").strip()
 
@@ -66,7 +131,9 @@ for tw in twdomain:
 
         list_domain.append(twdoamin_dict)
 
-        delay = random.randint(1, 7)
+        delay = random.randint(20, 40)
+
+        sleep(delay)
     except:
         logging.error("tw doamin crawler failure.")
 #
@@ -102,6 +169,8 @@ for phd in phdomain:
         list_domain.append(phdomain_dict)
 
         delay = random.randint(1, 7)
+
+        sleep(delay)
     except:
         logging.error("phd doamin crawler failure.")
 
@@ -139,6 +208,8 @@ for vn in vndomain:
 
         delay = random.randint(1, 7)
 
+        sleep(delay)
+
     except:
         logging.error("vn doamin crawler failure.")
 
@@ -175,6 +246,8 @@ for ind in inddomain:
         list_domain.append(inddomain_dict)
 
         delay = random.randint(1, 7)
+
+        sleep(delay)
     except:
         logging.error("ind doamin crawler failure.")
 
