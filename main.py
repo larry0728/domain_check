@@ -31,7 +31,7 @@ def days(str1,str2):
     num=(date2-date1).days
     return num
 
-
+#https://lookup.icann.org/en/lookup
 for tw in twdomain:
     try:
         twdoamin_dict = {}
